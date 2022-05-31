@@ -1,0 +1,125 @@
+var SS = SpreadsheetApp.openById('1UFjCabmW8vBM-8G3401E6IoR-ay1DbeGAxApRrXfuzs');
+var sheet = SS.getSheetByName('Trang tính1');
+
+function doGet(e) {
+  var action = e.parameter.action;
+
+  if (action == 'getItems'){
+    return getItems(e);
+} 
+  // return ContentService.createTextOutput("No value passed as argument to script Url.");
+  Logger.log( JSON.stringify(e) );
+  var result = 'Ok';
+  if (e.parameter == 'undefined') {
+    result = 'No Parameters';
+  }
+  else {
+    
+    var sheet_id = '1UFjCabmW8vBM-8G3401E6IoR-ay1DbeGAxApRrXfuzs'; 	// Spreadsheet ID
+    var sheet = SpreadsheetApp.openById(sheet_id).getActiveSheet();
+    var newRow = sheet.getLastRow() + 1;						
+    var rowData = [];
+    var Curr_Date = new Date();
+    rowData[0] = Curr_Date; // Date in column A
+    var Curr_Time = Utilities.formatDate(Curr_Date, "Asia/Jakarta", 'HH:mm:ss');
+    rowData[1] = Curr_Time; // Time in column B
+    for (var param in e.parameter) {
+
+
+      Logger.log('In for loop, param=' + param);
+      var value = stripQuotes(e.parameter[param]);
+      Logger.log(param + ':' + e.parameter[param]);
+
+      switch (param) {
+        case 'temperature':
+
+          rowData[2] = value; // Temperature in column C
+          result = 'Temperature Written on column C'; 
+          break;
+        case 'humidity':
+          rowData[3] = value; // Humidity in column D
+          result += ' ,Humidity Written on column D'; 
+          break;  
+        default:
+          result = "unsupported parameter";
+      }
+    }
+    Logger.log(JSON.stringify(rowData));
+    var newRange = sheet.getRange(newRow, 1, 1, rowData.length);
+    newRange.setValues([rowData]);
+  }
+      var read = e.parameter.read;
+  
+  if (read !== undefined){
+    return ContentService.createTextOutput(sheet.getRange(read).getValue());
+  }
+
+
+  return ContentService.createTextOutput(result);
+}
+function stripQuotes( value ) {
+  return value.replace(/^["']|['"]$/g, "");
+}
+
+
+//var ss = SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/1UFjCabmW8vBM-8G3401E6IoR-ay1DbeGAxApRrXfuzs/edit?fbclid=IwAR2M5aK2iHk7CWwNEl0iipSiDGOgBVawLoSx3Vkw1LxoBMpiFXXnBRsi5fY#gid=0");
+//var sheet = ss.getSheetByName('Trang tính1');
+
+
+
+function getItems(){
+
+    var records = {};
+
+    var rows = sheet.getRange(2, 1,sheet.getLastRow() - 1,sheet.getLastColumn()).getValues();
+        data = [];
+
+    for (var r = 0,l = rows.length; r<l; r++){
+      var row = rows[r],
+          record = {};
+      record['timeupdate']=row[0];
+      record['cambien']=row[1];
+      record['nhietdo']=row[2];
+      record['doam'] =row[3];
+
+      data.push(record);
+}
+records.items = data;
+var result =JSON.stringify(records);
+return ContentService.createTextOutput(result).setMimeType(ContentService.MimeType.JSON);
+}
+
+
+//var sheet = ss.getSheetByName('Appggooglesheet');
+
+function doPost(e){
+var action = e.parameter.action;
+var val = e.parameter.value;
+  
+  if (e.parameter.value !== undefined){
+    //var range = sheet.getRange('A2');
+    //var range = sheet.getRange('A3');
+    range.setValue(val);
+  }
+if (action =='addstudent'){
+  return addItem(e);
+
+}
+
+}
+function addItem(e){
+  var name = e.parameter.vname;
+  var address = e.parameter.vaddress;
+  var id = e.parameter.vid;
+
+  sheet.appendRow([name,address,name,name,id]);
+    return ContentService.createTextOutput("Success").setMimeType(ContentService.MimeType.TEXT);
+}
+
+
+
+
+
+
+
+
